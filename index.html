@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة تتبيلة الدجاج</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --ink:#1c1a17;
+    --paper:#eae5da;
+    --card:#f5f2ea;
+    --line:#c9c0ac;
+    --brass:#9c7a3c;
+    --brass-deep:#7a5e2a;
+    --chili:#b3411f;
+    --good:#3f6b4a;
+    --warn:#a3781f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0px, rgba(0,0,0,.025) 1px, transparent 1px, transparent 24px);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .sheet{
+    max-width:480px;
+    margin:0 auto;
+    background:var(--card);
+    border:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(0,0,0,.05), 0 12px 30px -18px rgba(0,0,0,.4);
+  }
+  .tag{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 20px;
+    border-bottom:2px solid var(--ink);
+  }
+  .tag .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    color:var(--brass-deep);
+    text-transform:uppercase;
+  }
+  .tag .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#8a8072;
+  }
+  header{
+    padding:22px 20px 18px;
+    border-bottom:1px solid var(--line);
+  }
+  h1{
+    margin:0 0 4px;
+    font-size:26px;
+    font-weight:900;
+  }
+  .sub{
+    margin:0;
+    font-size:14px;
+    color:#5b5347;
+  }
+
+  .recipe-block{
+    padding:18px 20px 4px;
+  }
+  .recipe-block label{
+    display:block;
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  select#recipeSelect{
+    width:100%;
+    font-family:'Tajawal',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    padding:11px 12px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    color:var(--ink);
+    outline:none;
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+    background-image:linear-gradient(45deg, transparent 50%, var(--brass-deep) 50%), linear-gradient(135deg, var(--brass-deep) 50%, transparent 50%);
+    background-position: 16px calc(50% - 3px), 10px calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat:no-repeat;
+    padding-right:32px;
+  }
+  select#recipeSelect:focus{border-color:var(--brass);}
+  .recipe-desc{
+    font-size:12.5px;
+    color:#8a8072;
+    margin:8px 2px 0;
+    line-height:1.6;
+  }
+
+  .input-block{
+    padding:18px 20px 20px;
+    border-bottom:1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.02), transparent 40%);
+  }
+  .input-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .input-row label{
+    font-size:14px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .input-wrap{
+    flex:1;
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+  input#weight{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:28px;
+    font-weight:600;
+    padding:8px 46px 8px 8px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    color:var(--ink);
+    outline:none;
+  }
+  input#weight:focus{border-color:var(--brass);}
+  .unit{
+    position:absolute;
+    left:14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:#8a8072;
+  }
+  .presets{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+  .presets button{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:7px 4px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--brass-deep);
+    cursor:pointer;
+  }
+  .presets button:hover{background:var(--brass);color:#fff;border-color:var(--brass);}
+  .presets button.active{background:var(--brass-deep);color:#fff;border-color:var(--brass-deep);}
+
+  .section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--brass-deep);
+    padding:16px 20px 8px;
+  }
+  .section-title .hint{
+    text-transform:none;
+    letter-spacing:0;
+    font-family:'Tajawal',sans-serif;
+    font-size:11px;
+    color:#8a8072;
+  }
+
+  table.ingredients{
+    width:100%;
+    border-collapse:collapse;
+  }
+  table.ingredients td{
+    padding:9px 20px;
+    font-size:15px;
+    border-bottom:1px dashed var(--line);
+  }
+  table.ingredients tr:last-child td{border-bottom:none;}
+  td.amt{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    text-align:left;
+    white-space:nowrap;
+    color:var(--chili);
+    width:90px;
+  }
+  tr.optional-row td{color:#5b5347;}
+  tr.optional-row td.amt{color:var(--warn);}
+  .opt-badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    padding:1px 5px;
+    margin-right:6px;
+    border:1px solid var(--warn);
+    color:var(--warn);
+    border-radius:2px;
+    vertical-align:middle;
+  }
+
+  .optional-picker{
+    padding:6px 20px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .toggle-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:14px;
+  }
+  .toggle-item:last-child{border-bottom:none;}
+  .toggle-item input{
+    width:17px;
+    height:17px;
+    accent-color:var(--brass-deep);
+    cursor:pointer;
+  }
+  .toggle-item label{
+    flex:1;
+    cursor:pointer;
+  }
+  .toggle-item .base-amt{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#8a8072;
+  }
+  .no-optional{
+    padding:10px 20px 16px;
+    font-size:13px;
+    color:#8a8072;
+  }
+
+  .steps-list{
+    list-style:none;
+    counter-reset:step;
+    padding:6px 20px 18px;
+    margin:0;
+    border-bottom:1px solid var(--line);
+  }
+  .steps-list li{
+    position:relative;
+    padding-right:34px;
+    margin-bottom:12px;
+    font-size:14px;
+    line-height:1.8;
+    color:#3a352c;
+  }
+  .steps-list li:last-child{margin-bottom:0;}
+  .steps-list li::before{
+    counter-increment:step;
+    content:counter(step);
+    position:absolute;
+    right:0;
+    top:0;
+    width:22px;
+    height:22px;
+    background:var(--brass-deep);
+    color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .airfryer-box{
+    margin:0 20px 18px;
+    border:1px solid var(--line);
+  }
+  .af-stats{
+    display:flex;
+    background:var(--paper);
+  }
+  .af-stat{
+    flex:1;
+    padding:12px 14px;
+    text-align:center;
+    border-left:1px solid var(--line);
+  }
+  .af-stat:last-child{border-left:none;}
+  .af-stat .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#8a8072;
+    margin-bottom:3px;
+  }
+  .af-stat .v{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:16px;
+    font-weight:700;
+    color:var(--chili);
+  }
+  .af-tips{
+    padding:12px 14px 14px;
+    margin:0;
+    font-size:13px;
+    line-height:1.8;
+    color:#5b5347;
+    list-style:none;
+  }
+  .af-tips li{
+    padding-right:16px;
+    position:relative;
+    margin-bottom:6px;
+  }
+  .af-tips li::before{
+    content:'\203A';
+    position:absolute;
+    right:0;
+    color:var(--brass-deep);
+    font-weight:700;
+  }
+  .af-tips li:last-child{margin-bottom:0;}
+
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    margin-top:2px;
+    border-top:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+  }
+  .stat{
+    background:var(--card);
+    padding:16px 20px;
+  }
+  .stat .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#8a8072;
+    margin-bottom:4px;
+  }
+  .stat .v{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    font-weight:600;
+    color:var(--good);
+  }
+  .stat .v small{
+    font-size:12px;
+    font-weight:500;
+    color:#8a8072;
+  }
+  .stat .v.warn{color:var(--warn);}
+  .stat .v.chili{color:var(--chili);}
+
+  .cost-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 20px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:#5b5347;
+    border-bottom:1px dashed var(--line);
+  }
+  .cost-row:last-of-type{border-bottom:1px solid var(--line);}
+  .cost-row .price{
+    font-weight:700;
+    color:var(--ink);
+    font-size:16px;
+  }
+
+  .tip-box{
+    margin:16px 20px 4px;
+    padding:12px 14px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-right:3px solid var(--brass);
+    font-size:13px;
+    line-height:1.7;
+    color:#5b5347;
+  }
+  .tip-box b{color:var(--ink);}
+
+  .actions{
+    display:flex;
+    gap:8px;
+    padding:16px 20px 20px;
+  }
+  .actions button{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:10px 6px;
+    background:var(--ink);
+    color:var(--paper);
+    border:1px solid var(--ink);
+    cursor:pointer;
+  }
+  .actions button:hover{background:var(--brass-deep);border-color:var(--brass-deep);}
+  .actions button.secondary{
+    background:transparent;
+    color:var(--ink);
+  }
+  .actions button.secondary:hover{background:var(--ink);color:var(--paper);}
+  .copy-flash{color:var(--good) !important;}
+
+  footer{
+    padding:14px 20px 22px;
+    font-size:12px;
+    color:#8a8072;
+    line-height:1.7;
+  }
+
+  @media print{
+    body{padding:0;background:#fff;}
+    .recipe-block, .presets, .optional-picker, .actions{display:none;}
+    .sheet{box-shadow:none;border:none;max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="tag">
+    <span class="label" id="tagLabel">تتبيلة الدجاج الكريمية الحارة</span>
+    <span class="num" id="tagRef">Ref. 0117</span>
+  </div>
+
+  <header>
+    <h1>حاسبة التتبيلة</h1>
+    <p class="sub">اختار الوصفة ودخّل وزن الدجاج النيء وخليها تحسبلك كل شي أوتوماتيك</p>
+  </header>
+
+  <div class="recipe-block">
+    <label for="recipeSelect">الوصفة</label>
+    <select id="recipeSelect"></select>
+    <p class="recipe-desc" id="recipeDesc"></p>
+  </div>
+
+  <div class="input-block">
+    <div class="input-row">
+      <label for="weight">وزن الدجاج</label>
+      <div class="input-wrap">
+        <input type="number" id="weight" value="630" min="1" step="10">
+        <span class="unit">غرام</span>
+      </div>
+    </div>
+    <div class="presets">
+      <button data-w="630">630غ · يوم بدون بيض</button>
+      <button data-w="760">760غ · يوم كامل</button>
+      <button data-w="1000">1 كغم</button>
+    </div>
+  </div>
+
+  <div class="section-title">مقادير التتبيلة الأساسية</div>
+  <table class="ingredients" id="ingredientsTable"></table>
+
+  <div class="section-title">
+    إضافات اختيارية
+    <span class="hint">فعّل اللي بدك ياه</span>
+  </div>
+  <div class="optional-picker" id="optionalPicker"></div>
+
+  <div class="section-title">طريقة التحضير</div>
+  <ol class="steps-list" id="stepsList"></ol>
+
+  <div class="section-title">بالمقلاة الهوائية (Air Fryer)</div>
+  <div class="airfryer-box" id="airfryerBox"></div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="k">بروتين نيء (٢٣٪)</div>
+      <div class="v" id="proteinVal">-- <small>غ</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">بروتين بعد الشوي</div>
+      <div class="v" id="proteinCooked">-- <small>غ</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">سعرات تقديرية (دجاج فقط)</div>
+      <div class="v warn" id="caloriesVal">-- <small>سعرة</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">دهون تقديرية</div>
+      <div class="v warn" id="fatVal">-- <small>غ</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">عدد الحصص التقريبي</div>
+      <div class="v chili" id="servingsVal">-- <small>حصة</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">مدة التتبيل المقترحة</div>
+      <div class="v chili" id="marinateVal">--</div>
+    </div>
+  </div>
+
+  <div class="section-title">السعر التقديري</div>
+  <div class="cost-row">
+    <span>طازج (٢.٥٠ د/كغم)</span>
+    <span class="price" id="costFresh">--</span>
+  </div>
+  <div class="cost-row">
+    <span>مجمد (٣.٠٠ د/كغم)</span>
+    <span class="price" id="costFrozen">--</span>
+  </div>
+
+  <div class="tip-box" id="tipBox"></div>
+
+  <div class="actions">
+    <button id="copyBtn">نسخ المقادير والطريقة</button>
+    <button class="secondary" id="printBtn">طباعة</button>
+  </div>
+
+  <footer>
+    المقادير الأساسية محسوبة على ٦٣٠غ دجاج نيء وبتتحرك نسبياً مع أي وزن تدخّله. نسبة البروتين النيء ~٢٣غ/١٠٠غ، وبعد الشوي ترتفع النسبة لكن الكمية المطلقة ثابتة تقريباً (بيتبخر الماء بس). السعرات والدهون تقديرية لصدر/فخذ دجاج نيء بدون جلد وما بتحسب زيت أو إضافات اختيارية. أوقات المقلاة الهوائية تقريبية وبتعتمد على حجم وسمك القطع وقوة جهازك — دايماً تأكد الحرارة الداخلية وصلت ٧٤°م. آخر وصفة ووزن وإضافات مستخدمة بتتحفظ تلقائياً على هالجهاز.
+  </footer>
+</div>
+
+<script>
+  const BASE_WEIGHT = 630;
+
+  const RECIPES = {
+    'spicy-creamy': {
+      name: 'كريمية حارة (زبادي)',
+      ref: '0117',
+      desc: 'التتبيلة الأصلية — زبادي وشطة ومعجون طماطم، حرّيفة وكريمية.',
+      ingredients: [
+        { name: 'زبادي يوناني قليل الدسم', amount: 150, unit: 'غ' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'معجون طماطم', amount: 1, unit: 'م.كبيرة' },
+        { name: 'صلصة حارة (شطة/هوت صوص)', amount: 1.5, unit: 'م.كبيرة' },
+        { name: 'بابريكا حارة أو حلوة', amount: 1, unit: 'م.صغيرة' },
+        { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'فلفل أسود', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+        { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'oliveoil', name: 'زيت زيتون', amount: 1, unit: 'م.كبيرة', note: 'لطراوة أكتر ولمسة دهون صحية' },
+        { id: 'ginger', name: 'زنجبيل بودرة', amount: 0.25, unit: 'م.صغيرة', note: 'نكهة خفيفة، اختياري بحتة' },
+        { id: 'onionpowder', name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة', note: 'يعمّق النكهة مع الثوم' },
+        { id: 'oregano', name: 'أوريغانو مجفف', amount: 0.5, unit: 'م.صغيرة', note: 'نكهة متوسطية خفيفة' },
+        { id: 'vinegar', name: 'خل تفاح', amount: 1, unit: 'م.صغيرة', note: 'بديل/إضافة لليمون لطراوة أكتر' },
+        { id: 'honey', name: 'عسل', amount: 1, unit: 'م.صغيرة', note: 'لموازنة الحرارة إذا الصلصة قوية' },
+      ],
+      steps: [
+        'اخلط كل مقادير التتبيلة سوا بوعاء (الزبادي، بودرة الثوم، معجون الطماطم، الصلصة الحارة، البابريكا، الكمون، الفلفل الأسود، الليمون، الملح) لين تصير عجينة متجانسة.',
+        'نظّف قطع الدجاج وجفّفها كويس بمنشفة ورق.',
+        'غطّي الدجاج بالتتبيلة كامل وتأكد إنها وصلت لكل الأجزاء.',
+        'غطي الوعاء وحطه بالثلاجة حسب مدة التتبيل المقترحة فوق.',
+        'طلّع الدجاج قبل الطبخ بـ١٥-٢٠ دقيقة توصل حرارة الغرفة.',
+        'اطبخه بالطريقة يلي بتفضلها — فرن، شواية، أو مقلاة هوائية متل تحت.',
+      ],
+      airfryer: {
+        temp: '190°م',
+        time: '14-18 دقيقة',
+        tips: [
+          'رش القطع رشة خفيفة زيت زيتون قبل الحط بالسلة.',
+          'رتب القطع بصف واحد بدون تلاصق عشان تستوي بالتساوي.',
+          'اقلبها ع نص الوقت.',
+          'تأكد الحرارة الداخلية وصلت ٧٤°م أو العصير طالع صافي.',
+        ]
+      }
+    },
+    'lemon-zaatar': {
+      name: 'ليمون وزعتر مشوي',
+      ref: '0132',
+      desc: 'نكهة بحرية خفيفة، مثالية للشوي على الفحم أو الفرن الحامي.',
+      ingredients: [
+        { name: 'زيت زيتون', amount: 2, unit: 'م.كبيرة' },
+        { name: 'عصير ليمون', amount: 2, unit: 'م.كبيرة' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'زعتر بري', amount: 1.5, unit: 'م.كبيرة' },
+        { name: 'بابريكا حلوة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'فلفل أسود', amount: 0.25, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'onionpowder2', name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة', note: 'يعطي عمق أكتر للنكهة' },
+        { id: 'oregano2', name: 'أوريغانو', amount: 0.5, unit: 'م.صغيرة', note: 'يقوّي الطابع المتوسطي' },
+        { id: 'pomegranate', name: 'دبس رمان', amount: 1, unit: 'م.صغيرة', note: 'حموضة وحلاوة خفيفة' },
+        { id: 'sumac', name: 'سماق', amount: 0.5, unit: 'م.صغيرة', note: 'حموضة إضافية بنكهة شامية' },
+      ],
+      steps: [
+        'اخلط زيت الزيتون، الليمون، بودرة الثوم، الزعتر، البابريكا، الملح والفلفل بوعاء.',
+        'جفف قطع الدجاج ودهنها بالتتبيلة كامل.',
+        'خليها بالثلاجة حسب مدة التتبيل المقترحة فوق — هاي التتبيلة خفيفة وحمضية فما بتحتاج وقت طويل كتير.',
+        'لو ناوي تشوي عالفحم، خلي القطع تجف شوي من التتبيلة الزايدة قبل ما تحطها عالشواية.',
+        'اطبخها لين يتلون سطحها الذهبي والعصير يطلع صافي.',
+      ],
+      airfryer: {
+        temp: '200°م',
+        time: '12-16 دقيقة',
+        tips: [
+          'امسح التتبيلة الزايدة عن القطع قبل ما تحطها عشان ما تحرق.',
+          'رشة زيت خفيفة فوق كل قطعة.',
+          'اقلبها بنص الوقت لتحمير متساوي.',
+          'إذا القطع سميكة زيد ٢-٣ دقايق.',
+        ]
+      }
+    },
+    'curry': {
+      name: 'كاري أصفر',
+      ref: '0145',
+      desc: 'دافي وعطري، منيح مع الأرز أو الخضار المشوية.',
+      ingredients: [
+        { name: 'زبادي أو لبن جوز الهند', amount: 150, unit: 'غ' },
+        { name: 'بودرة كاري', amount: 1.5, unit: 'م.كبيرة' },
+        { name: 'كركم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+        { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'cardamom', name: 'هيل مطحون', amount: 0.25, unit: 'م.صغيرة', note: 'نكهة هندية أعمق' },
+        { id: 'chiliflakes', name: 'فلفل أحمر حار', amount: 0.5, unit: 'م.صغيرة', note: 'لمن بدك حرارة أعلى' },
+        { id: 'coriander', name: 'كزبرة خضراء مفرومة', amount: 1, unit: 'م.كبيرة', note: 'تنضاف آخر التتبيل أو عالتقديم' },
+        { id: 'honey2', name: 'عسل', amount: 1, unit: 'م.صغيرة', note: 'يوازن حرارة الكاري' },
+      ],
+      steps: [
+        'اخلط الزبادي أو لبن جوز الهند مع بودرة الكاري، الكركم، بودرة الثوم، الزنجبيل، الليمون والملح.',
+        'غطي قطع الدجاج بالتتبيلة كامل.',
+        'خليها بالثلاجة حسب المدة المقترحة فوق — كلما طالت المدة كلما النكهة أعمق.',
+        'لو بدك صلصة، اطبخ الدجاج المتبل بمقلاة على نار متوسطة مع شوية مرقة أو لبن جوز الهند إضافي لين يقصر القوام.',
+        'قدمه مع أرز أو خبز.',
+      ],
+      airfryer: {
+        temp: '190°م',
+        time: '14-18 دقيقة',
+        tips: [
+          'امسح الزيادة من التتبيلة الكريمية قبل الحط بالسلة عشان ما تسيح وتوسخ القاعدة.',
+          'رشة زيت خفيفة تساعد التلوّن.',
+          'اقلبها بنص الوقت.',
+          'الكاري بيتلون غامق شوي من الكركم وهاد طبيعي مش حرقان.',
+        ]
+      }
+    },
+    'tandoori': {
+      name: 'تندوري',
+      ref: '0158',
+      desc: 'بهارات قوية ولون مميز، الأفضل على الشواية أو الفرن العالي.',
+      ingredients: [
+        { name: 'زبادي يوناني', amount: 150, unit: 'غ' },
+        { name: 'بابريكا حارة', amount: 1, unit: 'م.صغيرة' },
+        { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'كزبرة ناشفة مطحونة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'كركم', amount: 0.25, unit: 'م.صغيرة' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+        { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'chilired', name: 'فلفل أحمر حار إضافي', amount: 0.5, unit: 'م.صغيرة', note: 'لحرارة تندوري أقوى' },
+        { id: 'oil2', name: 'زيت', amount: 1, unit: 'م.كبيرة', note: 'يساعد التتبيلة تلتصق وتمنع الجفاف' },
+        { id: 'coriander2', name: 'كزبرة خضراء', amount: 1, unit: 'م.كبيرة', note: 'للتقديم أو داخل التتبيلة' },
+      ],
+      steps: [
+        'اخلط الزبادي مع كل البهارات (البابريكا، الكمون، الكزبرة، الكركم، بودرة الثوم، الزنجبيل)، الليمون والملح.',
+        'اعمل شقوق خفيفة بقطع الدجاج عشان التتبيلة توصل لجوا.',
+        'غطي القطع بالتتبيلة كامل واتركها بالثلاجة حسب المدة المقترحة فوق — الأفضل أطول مدة ممكنة لنكهة تندوري حقيقية.',
+        'اطبخها على نار عالية أو شواية لين يصير سطحها فيه شوية حرق خفيف (تشارينغ) متل التندوري الأصلي.',
+      ],
+      airfryer: {
+        temp: '210°م',
+        time: '14-18 دقيقة',
+        tips: [
+          'المقلاة الهوائية منيحة تعطي تلون شبه التشارينغ متاع فرن التندوري التقليدي.',
+          'رتب القطع بمسافة بينها.',
+          'اقلبها بنص الوقت ورش رشة زيت لو حسيتها ناشفة.',
+          'لآخر ٢-٣ دقايق زود الحرارة شوي لو بدك تلوّن أغمق.',
+        ]
+      }
+    },
+    'soy-honey': {
+      name: 'صويا وعسل (آسيوي)',
+      ref: '0171',
+      desc: 'حلو-مالح بطابع آسيوي، منيح للقلي أو الشوي السريع.',
+      ingredients: [
+        { name: 'صوص صويا', amount: 3, unit: 'م.كبيرة' },
+        { name: 'عسل', amount: 2, unit: 'م.كبيرة' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'خل أرز أو خل تفاح', amount: 1, unit: 'م.كبيرة' },
+        { name: 'زيت سمسم', amount: 1, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'sesame', name: 'سمسم محمص', amount: 1, unit: 'م.صغيرة', note: 'للتزيين بعد الشوي' },
+        { id: 'chiliflakes2', name: 'فلفل حار مجروش', amount: 0.5, unit: 'م.صغيرة', note: 'لمسة حرارة' },
+        { id: 'greenonion', name: 'بصل أخضر مفروم', amount: 1, unit: 'م.كبيرة', note: 'يضاف عالتقديم غالباً' },
+      ],
+      steps: [
+        'اخلط صوص الصويا، العسل، بودرة الثوم، الزنجبيل، الخل وزيت السمسم.',
+        'اطبخ نص الكمية عالنار لين تقصر شوي وتصير غليظة كصلصة تقديم، واحتفظ بالنص التاني نيء للتتبيل (تجنباً لتلوث الصلصة النيئة).',
+        'غطي الدجاج بالتتبيلة النيئة واتركه بالثلاجة حسب المدة المقترحة فوق.',
+        'اطبخ الدجاج بالطريقة يلي بتحبها، ودهنه بالصلصة المطبوخة بآخر ٢-٣ دقايق بس عشان ما يحترق العسل.',
+      ],
+      airfryer: {
+        temp: '190°م',
+        time: '12-15 دقيقة',
+        tips: [
+          'العسل بالتتبيلة ممكن يحرق بسرعة، راقب آخر ٣-٤ دقايق منيح.',
+          'ادهن القطع بالصلصة المطبوخة بالدقايق الأخيرة بس مش من البداية.',
+          'اقلبها بنص الوقت.',
+          'رش سمسم بعد ما تطلع من المقلاة مباشرة.',
+        ]
+      }
+    },
+    'simple-dry': {
+      name: 'بهارات جافة بسيطة (كيتو)',
+      ref: '0189',
+      desc: 'خفيفة وسريعة، منيحة للي بده شي بسيط بدون سكريات أو زبادي.',
+      ingredients: [
+        { name: 'زيت زيتون', amount: 1.5, unit: 'م.كبيرة' },
+        { name: 'بابريكا', amount: 1, unit: 'م.صغيرة' },
+        { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+        { name: 'فلفل أسود', amount: 0.5, unit: 'م.صغيرة' },
+      ],
+      optional: [
+        { id: 'oregano3', name: 'أوريغانو', amount: 0.5, unit: 'م.صغيرة', note: 'نكهة إضافية بسيطة' },
+        { id: 'chiliflakes3', name: 'فلفل حار مجروش', amount: 0.5, unit: 'م.صغيرة', note: 'لمن حاب حرارة' },
+        { id: 'lemon3', name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة', note: 'يعطي نكهة أخف وأطرى' },
+      ],
+      steps: [
+        'جفف قطع الدجاج كويس بمنشفة ورق (مهم لهاي الوصفة عشان البهارات تلتصق منيح).',
+        'ادهنها بزيت الزيتون.',
+        'رش كل البهارات الجافة (البابريكا، بودرة الثوم، بصل بودرة، الكمون، الملح، الفلفل) وافرك عالدجاج كامل.',
+        'لو عندك وقت خليها بالثلاجة حسب المدة المقترحة فوق، بس هاي الوصفة كمان منيحة حتى بدون تتبيل طويل.',
+        'اطبخها بالطريقة يلي بتحبها.',
+      ],
+      airfryer: {
+        temp: '200°م',
+        time: '12-16 دقيقة',
+        tips: [
+          'ما تحتاج زيت إضافي غير يلي بالتتبيلة.',
+          'رتبها بصف واحد بدون تلاصق.',
+          'اقلبها بنص الوقت لتحمير متساوي من الجهتين.',
+          'تأكد الحرارة الداخلية ٧٤°م قبل ما تطلعها.',
+        ]
+      }
+    },
+  };
+
+  const weightInput = document.getElementById('weight');
+  const recipeSelect = document.getElementById('recipeSelect');
+  const recipeDesc = document.getElementById('recipeDesc');
+  const tagLabel = document.getElementById('tagLabel');
+  const tagRef = document.getElementById('tagRef');
+  const table = document.getElementById('ingredientsTable');
+  const optionalPicker = document.getElementById('optionalPicker');
+  const stepsList = document.getElementById('stepsList');
+  const airfryerBox = document.getElementById('airfryerBox');
+  const proteinVal = document.getElementById('proteinVal');
+  const proteinCooked = document.getElementById('proteinCooked');
+  const caloriesVal = document.getElementById('caloriesVal');
+  const fatVal = document.getElementById('fatVal');
+  const servingsVal = document.getElementById('servingsVal');
+  const marinateVal = document.getElementById('marinateVal');
+  const costFresh = document.getElementById('costFresh');
+  const costFrozen = document.getElementById('costFrozen');
+  const tipBox = document.getElementById('tipBox');
+  const copyBtn = document.getElementById('copyBtn');
+  const printBtn = document.getElementById('printBtn');
+
+  const STORAGE_KEY = 'chickenCalcState';
+  let currentRecipeId = 'spicy-creamy';
+  let optionalByRecipe = {};
+  Object.keys(RECIPES).forEach(id => {
+    optionalByRecipe[id] = {};
+    RECIPES[id].optional.forEach(o => optionalByRecipe[id][o.id] = false);
+  });
+
+  function loadState(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      if(saved.weight) weightInput.value = saved.weight;
+      if(saved.recipeId && RECIPES[saved.recipeId]) currentRecipeId = saved.recipeId;
+      if(saved.optionalByRecipe){
+        Object.keys(saved.optionalByRecipe).forEach(id => {
+          if(optionalByRecipe[id]) optionalByRecipe[id] = Object.assign(optionalByRecipe[id], saved.optionalByRecipe[id]);
+        });
+      }
+    }catch(e){ /* ignore corrupt storage */ }
+  }
+  function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ weight: weightInput.value, recipeId: currentRecipeId, optionalByRecipe }));
+    }catch(e){ /* storage unavailable, no big deal */ }
+  }
+
+  function fmt(n){
+    return (Math.round(n * 100) / 100).toString();
+  }
+
+  function buildRecipeSelect(){
+    recipeSelect.innerHTML = '';
+    Object.keys(RECIPES).forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = RECIPES[id].name;
+      if(id === currentRecipeId) opt.selected = true;
+      recipeSelect.appendChild(opt);
+    });
+  }
+
+  function buildOptionalPicker(){
+    const recipe = RECIPES[currentRecipeId];
+    optionalPicker.innerHTML = '';
+    if(!recipe.optional.length){
+      const p = document.createElement('p');
+      p.className = 'no-optional';
+      p.textContent = 'ما في إضافات اختيارية لهاي الوصفة حالياً.';
+      optionalPicker.appendChild(p);
+      return;
+    }
+    recipe.optional.forEach(opt => {
+      const row = document.createElement('div');
+      row.className = 'toggle-item';
+      row.innerHTML = `
+        <input type="checkbox" id="opt-${opt.id}" ${optionalByRecipe[currentRecipeId][opt.id] ? 'checked' : ''}>
+        <label for="opt-${opt.id}">${opt.name}<br><span class="base-amt">${opt.note}</span></label>
+        <span class="base-amt">${opt.amount} ${opt.unit}</span>
+      `;
+      optionalPicker.appendChild(row);
+      row.querySelector('input').addEventListener('change', (e) => {
+        optionalByRecipe[currentRecipeId][opt.id] = e.target.checked;
+        render();
+      });
+    });
+  }
+
+  function buildStepsAndAirfryer(){
+    const recipe = RECIPES[currentRecipeId];
+    stepsList.innerHTML = '';
+    recipe.steps.forEach(step => {
+      const li = document.createElement('li');
+      li.textContent = step;
+      stepsList.appendChild(li);
+    });
+
+    const af = recipe.airfryer;
+    airfryerBox.innerHTML = `
+      <div class="af-stats">
+        <div class="af-stat"><div class="k">الحرارة</div><div class="v">${af.temp}</div></div>
+        <div class="af-stat"><div class="k">المدة</div><div class="v">${af.time}</div></div>
+      </div>
+      <ul class="af-tips">${af.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+    `;
+  }
+
+  function render(){
+    const recipe = RECIPES[currentRecipeId];
+    const w = parseFloat(weightInput.value) || 0;
+    const ratio = w / BASE_WEIGHT;
+
+    tagLabel.textContent = recipe.name;
+    tagRef.textContent = 'Ref. ' + recipe.ref;
+    recipeDesc.textContent = recipe.desc;
+
+    document.querySelectorAll('.presets button').forEach(btn => {
+      btn.classList.toggle('active', parseFloat(btn.dataset.w) === w);
+    });
+
+    table.innerHTML = '';
+    recipe.ingredients.forEach(ing => {
+      const scaled = ing.amount * ratio;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${ing.name}</td><td class="amt">${fmt(scaled)} ${ing.unit}</td>`;
+      table.appendChild(tr);
+    });
+
+    recipe.optional.forEach(opt => {
+      if(!optionalByRecipe[currentRecipeId][opt.id]) return;
+      const scaled = opt.amount * ratio;
+      const tr = document.createElement('tr');
+      tr.className = 'optional-row';
+      tr.innerHTML = `<td><span class="opt-badge">اختياري</span>${opt.name}</td><td class="amt">${fmt(scaled)} ${opt.unit}</td>`;
+      table.appendChild(tr);
+    });
+
+    const proteinRaw = w * 0.23;
+    const proteinAfterCook = proteinRaw;
+    proteinVal.innerHTML = `${fmt(proteinRaw)} <small>غ</small>`;
+    proteinCooked.innerHTML = `${fmt(proteinAfterCook)} <small>غ (نفس الكمية، وزن أقل)</small>`;
+
+    const calories = w * 1.43;
+    const fat = w * 0.08;
+    caloriesVal.innerHTML = `${Math.round(calories)} <small>سعرة</small>`;
+    fatVal.innerHTML = `${fmt(fat)} <small>غ</small>`;
+
+    const servings = Math.max(1, Math.round(w / 180));
+    servingsVal.innerHTML = `~${servings} <small>حصة</small>`;
+
+    let marinateText = '٢-٤ ساعات';
+    if(w >= 900) marinateText = '٤-٨ ساعات';
+    else if(w <= 400) marinateText = '١-٢ ساعة';
+    marinateVal.textContent = marinateText;
+
+    const fresh = (w / 1000) * 2.5;
+    const frozen = (w / 1000) * 3.0;
+    costFresh.textContent = fmt(fresh) + ' د.أ';
+    costFrozen.textContent = fmt(frozen) + ' د.أ';
+
+    const activeOptional = recipe.optional.filter(o => optionalByRecipe[currentRecipeId][o.id]).map(o => o.name);
+    tipBox.innerHTML = activeOptional.length
+      ? `<b>ملاحظة:</b> فعّلت ${activeOptional.join('، ')} — هاي بتضيف نكهة بس ما محسوبة بالسعرات فوق.`
+      : `<b>نصيحة:</b> جرّب تفعّل شي من "إضافات اختيارية" فوق لتطوّر النكهة حسب مزاجك.`;
+
+    buildStepsAndAirfryer();
+    saveState();
+  }
+
+  function buildCopyText(){
+    const recipe = RECIPES[currentRecipeId];
+    const w = parseFloat(weightInput.value) || 0;
+    const ratio = w / BASE_WEIGHT;
+    let lines = [`${recipe.name} — ${w} غ دجاج نيء`, ''];
+    recipe.ingredients.forEach(ing => {
+      lines.push(`${fmt(ing.amount * ratio)} ${ing.unit} — ${ing.name}`);
+    });
+    const activeOptional = recipe.optional.filter(o => optionalByRecipe[currentRecipeId][o.id]);
+    if(activeOptional.length){
+      lines.push('', 'إضافات اختيارية:');
+      activeOptional.forEach(opt => {
+        lines.push(`${fmt(opt.amount * ratio)} ${opt.unit} — ${opt.name}`);
+      });
+    }
+    lines.push('', 'طريقة التحضير:');
+    recipe.steps.forEach((s, i) => lines.push(`${i + 1}. ${s}`));
+    lines.push('', `بالمقلاة الهوائية: ${recipe.airfryer.temp} لمدة ${recipe.airfryer.time}`);
+    recipe.airfryer.tips.forEach(t => lines.push(`- ${t}`));
+    return lines.join('\n');
+  }
+
+  weightInput.addEventListener('input', render);
+
+  recipeSelect.addEventListener('change', (e) => {
+    currentRecipeId = e.target.value;
+    buildOptionalPicker();
+    render();
+  });
+
+  document.querySelectorAll('.presets button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      weightInput.value = btn.dataset.w;
+      render();
+    });
+  });
+
+  function flashCopySuccess(){
+    const original = copyBtn.textContent;
+    copyBtn.textContent = 'انسخت! ✓';
+    copyBtn.classList.add('copy-flash');
+    setTimeout(() => {
+      copyBtn.textContent = original;
+      copyBtn.classList.remove('copy-flash');
+    }, 1500);
+  }
+
+  function fallbackCopy(text){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  copyBtn.addEventListener('click', () => {
+    const text = buildCopyText();
+    // navigator.clipboard needs a secure context (https). Files opened
+    // directly on a phone (file://) don't have that, so fall back to the
+    // classic textarea+execCommand trick which works everywhere.
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(flashCopySuccess).catch(() => {
+        if(fallbackCopy(text)) flashCopySuccess();
+        else copyBtn.textContent = 'حدد النص وانسخه يدوياً';
+      });
+    } else {
+      if(fallbackCopy(text)) flashCopySuccess();
+      else copyBtn.textContent = 'حدد النص وانسخه يدوياً';
+    }
+  });
+
+  printBtn.addEventListener('click', () => window.print());
+
+  loadState();
+  buildRecipeSelect();
+  buildOptionalPicker();
+  render();
+</script>
+
+</body>
+</html>
