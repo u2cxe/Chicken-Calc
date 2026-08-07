@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دفتر الدجاج والوجبات</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --ink:#1c1a17;
+    --paper:#eae5da;
+    --card:#f5f2ea;
+    --line:#c9c0ac;
+    --brass:#9c7a3c;
+    --brass-deep:#7a5e2a;
+    --chili:#b3411f;
+    --good:#3f6b4a;
+    --warn:#a3781f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0px, rgba(0,0,0,.025) 1px, transparent 1px, transparent 24px);
+    color:var(--ink);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .sheet{
+    max-width:520px;
+    margin:0 auto;
+    background:var(--card);
+    border:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(0,0,0,.05), 0 12px 30px -18px rgba(0,0,0,.4);
+  }
+
+  /* ---- top ledger tag ---- */
+  .tag{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 20px;
+    border-bottom:2px solid var(--ink);
+  }
+  .tag .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    color:var(--brass-deep);
+    text-transform:uppercase;
+  }
+  .tag .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#8a8072;
+  }
+
+  header.masthead{
+    padding:22px 20px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  header.masthead h1{
+    margin:0 0 4px;
+    font-size:26px;
+    font-weight:900;
+  }
+  header.masthead .sub{
+    margin:0;
+    font-size:13.5px;
+    color:#5b5347;
+  }
+
+  /* ---- shared daily-chicken strip (the signature element) ---- */
+  .today-strip{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 20px;
+    background:linear-gradient(180deg, rgba(0,0,0,.03), transparent 60%);
+    border-bottom:1px solid var(--line);
+  }
+  .today-strip .ts-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#8a8072;
+  }
+  .today-strip .ts-val{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    font-weight:700;
+    color:var(--chili);
+  }
+  .today-strip .ts-val small{font-size:11px;color:#8a8072;font-weight:500;}
+
+  /* ---- tabs ---- */
+  .tabs{
+    display:flex;
+    border-bottom:2px solid var(--ink);
+  }
+  .tabbtn{
+    flex:1;
+    font-family:'Tajawal',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:13px 6px;
+    background:var(--paper);
+    color:#5b5347;
+    border:none;
+    border-left:1px solid var(--line);
+    cursor:pointer;
+  }
+  .tabbtn:first-child{border-left:none;}
+  .tabbtn.active{
+    background:var(--card);
+    color:var(--ink);
+    box-shadow:inset 0 -3px 0 var(--chili);
+  }
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---- section titles (shared) ---- */
+  .section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--brass-deep);
+    padding:16px 20px 8px;
+  }
+  .section-title .hint{
+    text-transform:none;
+    letter-spacing:0;
+    font-family:'Tajawal',sans-serif;
+    font-size:11px;
+    color:#8a8072;
+  }
+
+  /* ================= MEAL PLAN TAB ================= */
+  .mp-toggle-row{display:flex;gap:6px;flex-wrap:wrap;padding:4px 20px 14px;}
+  .mp-toggle-btn{
+    font-family:'Tajawal',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    padding:7px 12px;
+    border:1.5px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .mp-toggle-btn.active{background:var(--ink);color:var(--card);}
+
+  .mp-totals{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border-top:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+  }
+  .mp-stat{background:var(--card);padding:14px 20px;}
+  .mp-stat .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#8a8072;
+    margin-bottom:4px;
+  }
+  .mp-stat .v{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:19px;
+    font-weight:600;
+    color:var(--good);
+  }
+  .mp-stat .v small{font-size:11px;font-weight:500;color:#8a8072;}
+  .mp-stat .v.warn{color:var(--warn);}
+  .mp-stat .v.chili{color:var(--chili);}
+
+  .mp-meal{border-bottom:1px solid var(--line);}
+  .mp-meal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:11px 20px;
+    background:linear-gradient(180deg, rgba(0,0,0,.025), transparent 70%);
+    border-bottom:1px dashed var(--line);
+  }
+  .mp-meal-head .name{font-weight:700;font-size:15px;}
+  .mp-meal-head .time{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--brass-deep);
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:3px 9px;
+    border-radius:12px;
+  }
+  .mp-meal-body{padding:6px 20px 10px;}
+
+  .mp-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+    flex-wrap:wrap;
+  }
+  .mp-item:last-child{border-bottom:none;}
+  .mp-item .item-name{font-weight:700;min-width:56px;}
+  .mp-item input[type=number]{
+    width:64px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    padding:5px 6px;
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    text-align:center;
+  }
+  .mp-item .kcal{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    color:var(--chili);
+    margin-right:auto;
+    margin-left:0;
+  }
+  .mp-state-btns{display:flex;gap:4px;}
+  .mp-state-btn{
+    font-size:10.5px;
+    padding:4px 8px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    cursor:pointer;
+    font-family:'Tajawal',sans-serif;
+    color:#5b5347;
+  }
+  .mp-state-btn.on{background:var(--brass-deep);color:#fff;border-color:var(--brass-deep);}
+
+  .mp-meal-sub{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#8a8072;
+    padding:6px 0 2px;
+  }
+
+  .mp-footer{padding:14px 20px 22px;font-size:12px;color:#8a8072;line-height:1.7;}
+
+  /* ================= SHARED INPUT / STAT PATTERNS ================= */
+  .input-block{
+    padding:18px 20px 20px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent 40%);
+  }
+  .input-row{display:flex;align-items:baseline;gap:10px;}
+  .input-row label{font-size:14px;font-weight:700;white-space:nowrap;}
+  .input-wrap{flex:1;position:relative;display:flex;align-items:center;}
+  .input-wrap input[type=number]{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:26px;
+    font-weight:600;
+    padding:8px 46px 8px 8px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    color:var(--ink);
+    outline:none;
+  }
+  .input-wrap input[type=number]:focus{border-color:var(--brass);}
+  .unit{position:absolute;left:14px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:#8a8072;}
+
+  .sync-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+    padding:8px 10px;
+    background:var(--paper);
+    border:1px dashed var(--brass-deep);
+  }
+  .sync-row button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    font-weight:600;
+    padding:6px 10px;
+    background:var(--brass-deep);
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .sync-row button:hover{background:var(--ink);}
+  .sync-row .sync-note{font-size:11.5px;color:#5b5347;line-height:1.5;}
+
+  .presets{display:flex;gap:8px;margin-top:10px;}
+  .presets button{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:7px 4px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--brass-deep);
+    cursor:pointer;
+  }
+  .presets button:hover{background:var(--brass);color:#fff;border-color:var(--brass);}
+  .presets button.active{background:var(--brass-deep);color:#fff;border-color:var(--brass-deep);}
+
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    margin-top:2px;
+    border-top:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+  }
+  .stat{background:var(--card);padding:16px 20px;}
+  .stat .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#8a8072;
+    margin-bottom:4px;
+  }
+  .stat .v{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--good);}
+  .stat .v small{font-size:12px;font-weight:500;color:#8a8072;}
+  .stat .v.warn{color:var(--warn);}
+  .stat .v.chili{color:var(--chili);}
+
+  .add-btn{
+    background:var(--paper);
+    color:var(--brass-deep);
+    border:1.5px solid var(--brass-deep);
+    padding:9px 14px;
+    font-family:'Tajawal',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    width:100%;
+  }
+  .add-btn:active{background:var(--brass-deep);color:#fff;}
+
+  /* ================= MARINADE TAB (from original calc) ================= */
+  .recipe-block{padding:18px 20px 4px;}
+  .recipe-block label{display:block;font-size:14px;font-weight:700;margin-bottom:8px;}
+  select#recipeSelect{
+    width:100%;
+    font-family:'Tajawal',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    padding:11px 12px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    color:var(--ink);
+    outline:none;
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+    background-image:linear-gradient(45deg, transparent 50%, var(--brass-deep) 50%), linear-gradient(135deg, var(--brass-deep) 50%, transparent 50%);
+    background-position: 16px calc(50% - 3px), 10px calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat:no-repeat;
+    padding-right:32px;
+  }
+  select#recipeSelect:focus{border-color:var(--brass);}
+  .recipe-desc{font-size:12.5px;color:#8a8072;margin:8px 2px 0;line-height:1.6;}
+
+  table.ingredients{width:100%;border-collapse:collapse;}
+  table.ingredients td{padding:9px 20px;font-size:15px;border-bottom:1px dashed var(--line);}
+  table.ingredients tr:last-child td{border-bottom:none;}
+  td.amt{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    text-align:left;
+    white-space:nowrap;
+    color:var(--chili);
+    width:90px;
+  }
+  tr.optional-row td{color:#5b5347;}
+  tr.optional-row td.amt{color:var(--warn);}
+  .opt-badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    padding:1px 5px;
+    margin-right:6px;
+    border:1px solid var(--warn);
+    color:var(--warn);
+    border-radius:2px;
+    vertical-align:middle;
+  }
+
+  .optional-picker{padding:6px 20px 16px;border-bottom:1px solid var(--line);}
+  .toggle-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:14px;
+  }
+  .toggle-item:last-child{border-bottom:none;}
+  .toggle-item input{width:17px;height:17px;accent-color:var(--brass-deep);cursor:pointer;}
+  .toggle-item label{flex:1;cursor:pointer;}
+  .toggle-item .base-amt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8072;}
+  .no-optional{padding:10px 20px 16px;font-size:13px;color:#8a8072;}
+
+  .steps-list{
+    list-style:none;
+    counter-reset:step;
+    padding:6px 20px 18px;
+    margin:0;
+    border-bottom:1px solid var(--line);
+  }
+  .steps-list li{
+    position:relative;
+    padding-right:34px;
+    margin-bottom:12px;
+    font-size:14px;
+    line-height:1.8;
+    color:#3a352c;
+  }
+  .steps-list li:last-child{margin-bottom:0;}
+  .steps-list li::before{
+    counter-increment:step;
+    content:counter(step);
+    position:absolute;
+    right:0;
+    top:0;
+    width:22px;
+    height:22px;
+    background:var(--brass-deep);
+    color:#fff;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .airfryer-box{margin:0 20px 18px;border:1px solid var(--line);}
+  .af-stats{display:flex;background:var(--paper);}
+  .af-stat{flex:1;padding:12px 14px;text-align:center;border-left:1px solid var(--line);}
+  .af-stat:last-child{border-left:none;}
+  .af-stat .k{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#8a8072;
+    margin-bottom:3px;
+  }
+  .af-stat .v{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:var(--chili);}
+  .af-tips{padding:12px 14px 14px;margin:0;font-size:13px;line-height:1.8;color:#5b5347;list-style:none;}
+  .af-tips li{padding-right:16px;position:relative;margin-bottom:6px;}
+  .af-tips li::before{content:'\203A';position:absolute;right:0;color:var(--brass-deep);font-weight:700;}
+  .af-tips li:last-child{margin-bottom:0;}
+
+  .cost-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 20px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:#5b5347;
+    border-bottom:1px dashed var(--line);
+  }
+  .cost-row:last-of-type{border-bottom:1px solid var(--line);}
+  .cost-row .price{font-weight:700;color:var(--ink);font-size:16px;}
+
+  .tip-box{
+    margin:16px 20px 4px;
+    padding:12px 14px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-right:3px solid var(--brass);
+    font-size:13px;
+    line-height:1.7;
+    color:#5b5347;
+  }
+  .tip-box b{color:var(--ink);}
+
+  .actions{display:flex;gap:8px;padding:16px 20px 20px;}
+  .actions button{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    padding:10px 6px;
+    background:var(--ink);
+    color:var(--paper);
+    border:1px solid var(--ink);
+    cursor:pointer;
+  }
+  .actions button:hover{background:var(--brass-deep);border-color:var(--brass-deep);}
+  .actions button.secondary{background:transparent;color:var(--ink);}
+  .actions button.secondary:hover{background:var(--ink);color:var(--paper);}
+  .copy-flash{color:var(--good) !important;}
+
+  /* ================= ACTUAL-BATCH PROTEIN TAB ================= */
+  .ameal-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .ameal-row:last-child{border-bottom:none;}
+  .ameal-row input[type=number]{
+    flex:1;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .ameal-result{
+    min-width:108px;
+    text-align:left;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    color:var(--good);
+    font-size:13px;
+  }
+  .ameal-result.warn{color:var(--chili);font-weight:500;}
+  .ameal-remove{
+    background:none;
+    border:none;
+    color:#8a8072;
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    padding:2px 4px;
+  }
+  .ameal-remove:hover{color:var(--chili);}
+
+  footer.finefoot{padding:14px 20px 22px;font-size:12px;color:#8a8072;line-height:1.7;}
+
+  @media print{
+    body{padding:0;background:#fff;}
+    .tabs, .recipe-block, .presets, .optional-picker, .actions, .today-strip, .sync-row, .add-btn, .ameal-remove{display:none;}
+    .sheet{box-shadow:none;border:none;max-width:100%;}
+  }
+  @media(max-width:420px){
+    .mp-item{font-size:13px;}
+    .tabbtn{font-size:12px;padding:12px 4px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="tag">
+    <span class="label" id="tagLabel">دفتر الدجاج والوجبات</span>
+    <span class="num" id="tagRef">Ref. AM-01</span>
+  </div>
+
+  <header class="masthead">
+    <h1>دفتر اليوم</h1>
+    <p class="sub">خطة الوجبات، حاسبة التتبيلة، وحاسبة البروتين الفعلي — بورقة واحدة، وبيتفاهموا مع بعض</p>
+  </header>
+
+  <div class="today-strip">
+    <span class="ts-label">مجموع دجاج نيء باليوم</span>
+    <span class="ts-val" id="todayChickenTotal">-- <small>غ</small></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="mealplan">خطة الوجبات</button>
+    <button class="tabbtn" data-tab="marinade">حاسبة التتبيلة</button>
+    <button class="tabbtn" data-tab="actual">الدفعة الفعلية</button>
+  </div>
+
+  <!-- ================= MEAL PLAN VIEW ================= -->
+  <div class="view active" id="view-mealplan">
+
+    <div class="section-title">نوع الكارب الأساسي<span class="hint">بيطبق على كل الوجبات</span></div>
+    <div class="mp-toggle-row" id="globalCarbToggle">
+      <button class="mp-toggle-btn active" data-carb="rice">رز</button>
+      <button class="mp-toggle-btn" data-carb="bread">خبز أسمر</button>
+      <button class="mp-toggle-btn" data-carb="oats">شوفان</button>
+      <button class="mp-toggle-btn" data-carb="potato">بطاطا مشوية</button>
+    </div>
+
+    <div class="mp-totals">
+      <div class="mp-stat"><div class="k">مجموع السعرات</div><div class="v chili" id="totalCal">--</div></div>
+      <div class="mp-stat"><div class="k">بروتين</div><div class="v" id="totalProtein">-- <small>غ</small></div></div>
+      <div class="mp-stat"><div class="k">كارب</div><div class="v" id="totalCarbG">-- <small>غ</small></div></div>
+      <div class="mp-stat"><div class="k">الفرق عن الهدف (٢٦٨٠)</div><div class="v warn" id="deficit">--</div></div>
+    </div>
+
+    <div id="meals"></div>
+
+    <p class="mp-footer">الأرقام تقريبية بالاعتماد على قيم غذائية عامة. الهدف اليومي مبني على عجز ٥٠٠ سعرة عن معدل الثبات (~٣١٨٠). راجع دكتور أو أخصائي تغذية للمتابعة الدقيقة.</p>
+  </div>
+
+  <!-- ================= MARINADE VIEW ================= -->
+  <div class="view" id="view-marinade">
+
+    <div class="recipe-block">
+      <label for="recipeSelect">الوصفة</label>
+      <select id="recipeSelect"></select>
+      <p class="recipe-desc" id="recipeDesc"></p>
+    </div>
+
+    <div class="input-block">
+      <div class="input-row">
+        <label for="weight">وزن الدجاج</label>
+        <div class="input-wrap">
+          <input type="number" id="weight" value="630" min="1" step="10">
+          <span class="unit">غرام</span>
+        </div>
+      </div>
+
+      <div class="sync-row">
+        <button id="syncBtn">استخدم دجاج اليوم ⇌</button>
+        <span class="sync-note">بيسحب مجموع الدجاج النيء من "خطة الوجبات" (<span id="syncPreview">--</span>غ)</span>
+      </div>
+
+      <div class="presets">
+        <button data-w="630">630غ · يوم بدون بيض</button>
+        <button data-w="760">760غ · يوم كامل</button>
+        <button data-w="1000">1 كغم</button>
+      </div>
+    </div>
+
+    <div class="section-title">مقادير التتبيلة الأساسية</div>
+    <table class="ingredients" id="ingredientsTable"></table>
+
+    <div class="section-title">إضافات اختيارية<span class="hint">فعّل اللي بدك ياه</span></div>
+    <div class="optional-picker" id="optionalPicker"></div>
+
+    <div class="section-title">طريقة التحضير</div>
+    <ol class="steps-list" id="stepsList"></ol>
+
+    <div class="section-title">بالمقلاة الهوائية (Air Fryer)</div>
+    <div class="airfryer-box" id="airfryerBox"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">بروتين نيء (٢٣٪ تقديري)</div><div class="v" id="proteinVal">-- <small>غ</small></div></div>
+      <div class="stat"><div class="k">بروتين بعد الشوي</div><div class="v" id="proteinCooked">-- <small>غ</small></div></div>
+      <div class="stat"><div class="k">سعرات تقديرية (دجاج فقط)</div><div class="v warn" id="caloriesVal">-- <small>سعرة</small></div></div>
+      <div class="stat"><div class="k">دهون تقديرية</div><div class="v warn" id="fatVal">-- <small>غ</small></div></div>
+      <div class="stat"><div class="k">عدد الحصص التقريبي</div><div class="v chili" id="servingsVal">-- <small>حصة</small></div></div>
+      <div class="stat"><div class="k">مدة التتبيل المقترحة</div><div class="v chili" id="marinateVal">--</div></div>
+    </div>
+
+    <div class="section-title">السعر التقديري</div>
+    <div class="cost-row"><span>طازج (٢.٥٠ د/كغم)</span><span class="price" id="costFresh">--</span></div>
+    <div class="cost-row"><span>مجمد (٣.٠٠ د/كغم)</span><span class="price" id="costFrozen">--</span></div>
+
+    <div class="tip-box" id="tipBox"></div>
+
+    <div class="actions">
+      <button id="copyBtn">نسخ المقادير والطريقة</button>
+      <button class="secondary" id="printBtn">طباعة</button>
+    </div>
+
+    <footer class="finefoot">المقادير الأساسية محسوبة على ٦٣٠غ دجاج نيء وبتتحرك نسبياً مع أي وزن تدخّله. نسبة البروتين النيء ~٢٣غ/١٠٠غ (تقدير عام)، وبعد الشوي ترتفع النسبة لكن الكمية المطلقة ثابتة تقريباً. السعرات والدهون تقديرية لصدر دجاج نيء بدون جلد وما بتحسب زيت أو إضافات اختيارية. أوقات المقلاة الهوائية تقريبية — دايماً تأكد الحرارة الداخلية وصلت ٧٤°م. إذا بدك رقم أدق من دفعتك الفعلية (بعد الطبخ)، استخدم تبويب "الدفعة الفعلية". الأرقام هون بتضل محفوظة بس لمدة الجلسة الحالية بالمتصفح.</footer>
+  </div>
+
+  <!-- ================= ACTUAL-BATCH PROTEIN VIEW ================= -->
+  <div class="view" id="view-actual">
+
+    <div class="section-title">دفعة الطبخ<span class="hint">وزن الدفعة قبل وبعد الطبخ</span></div>
+
+    <div class="input-block">
+      <div class="input-row">
+        <label for="batchRaw">الوزن النيء الكلي</label>
+        <div class="input-wrap">
+          <input type="number" id="batchRaw" placeholder="مثال: 2500">
+          <span class="unit">غرام</span>
+        </div>
+      </div>
+      <div class="sync-row">
+        <button id="batchSyncBtn">استخدم دجاج اليوم ⇌</button>
+        <span class="sync-note">بيسحب مجموع الدجاج النيء من "خطة الوجبات" (<span id="batchSyncPreview">--</span>غ)</span>
+      </div>
+    </div>
+
+    <div class="input-block" style="border-bottom:2px solid var(--ink);">
+      <div class="input-row">
+        <label for="batchCooked">الوزن المطبوخ الكلي</label>
+        <div class="input-wrap">
+          <input type="number" id="batchCooked" placeholder="مثال: 1600">
+          <span class="unit">غرام</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats" style="grid-template-columns:1fr 1fr;">
+      <div class="stat"><div class="k">بروتين الدفعة (نيء × ٢٣٪)</div><div class="v" id="batchTotalProtein">-- <small>غ</small></div></div>
+      <div class="stat"><div class="k">نسبة الفقد بالطبخ (وزن)</div><div class="v warn" id="batchLossPct">--</div></div>
+      <div class="stat" style="grid-column:1 / -1;"><div class="k">بروتين لكل ١٠٠غ مطبوخ (نسبة دفعتك الفعلية)</div><div class="v chili" id="batchPer100">--</div></div>
+    </div>
+
+    <div class="section-title">بروتين كل وجبة<span class="hint">زن الجزء المطبوخ من طبقك</span></div>
+    <div id="actualMealsList" style="padding:4px 20px 4px;"></div>
+    <div style="padding:4px 20px 16px;">
+      <button class="add-btn" id="addActualMealBtn">+ إضافة وجبة</button>
+    </div>
+
+    <p class="mp-footer">القاعدة: البروتين بيتحسب من الوزن النيء (٢٣٪ تقريباً)، والنسبة بين النيء والمطبوخ بتختلف حسب طريقة الطبخ — لازم تحسبها من جديد كل دفعة. هاي النسبة الفعلية أدق من الافتراض الثابت المستخدم بتبويب "حاسبة التتبيلة"، لأنها مبنية على وزن دفعتك الحقيقي بعد الطبخ.</p>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   TAB SWITCHING
+   ========================================================= */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+
+    if(btn.dataset.tab === 'marinade'){
+      renderMarinade();
+    } else {
+      document.getElementById('tagLabel').textContent = 'دفتر الدجاج والوجبات';
+      document.getElementById('tagRef').textContent = 'Ref. AM-01';
+    }
+  });
+});
+
+/* =========================================================
+   MEAL PLAN LOGIC
+   ========================================================= */
+const CHICKEN = { raw:{kcal:120, protein:22.5}, cooked:{kcal:160, protein:30} };
+const EGG_KCAL_EACH = 72;
+const OIL_KCAL_PER_TBSP = 120;
+
+const CARBS = {
+  rice:   { label:"رز",          raw:{kcal:360, protein:6.7}, cooked:{kcal:131, protein:2.4} },
+  bread:  { label:"خبز أسمر",    raw:null,                    cooked:{kcal:252, protein:9}   },
+  oats:   { label:"شوفان",       raw:{kcal:375, protein:13},  cooked:{kcal:187, protein:6.5} },
+  potato: { label:"بطاطا مشوية", raw:null,                    cooked:{kcal:87,  protein:2}    }
+};
+
+const meals = [
+  { name:"وجبة ١ (فطور)", time:"٨:٠٠ ص",
+    items:[
+      { type:"egg", label:"بيض", qty:5 },
+      { type:"oil", label:"زيت زيتون (قلي)", tbsp:0.5 },
+      { type:"carb", label:"كارب", grams:190, state:"cooked" }
+    ]
+  },
+  { name:"وجبة ٢", time:"١٢:٠٠ ظ",
+    items:[
+      { type:"chicken", label:"دجاج", grams:210, state:"raw" },
+      { type:"carb", label:"كارب", grams:250, state:"cooked" }
+    ]
+  },
+  { name:"وجبة ٣ (قبل التمرين)", time:"٣:٣٠ ع",
+    items:[
+      { type:"chicken", label:"دجاج", grams:210, state:"raw" },
+      { type:"carb", label:"كارب", grams:250, state:"cooked" }
+    ]
+  },
+  { name:"وجبة ٤ (بعد التمرين)", time:"٧:٣٠ م",
+    items:[
+      { type:"chicken", label:"دجاج", grams:210, state:"raw" },
+      { type:"carb", label:"كارب", grams:250, state:"cooked" },
+      { type:"oil", label:"زيت زيتون (سلطة)", tbsp:0.5 }
+    ]
+  }
+];
+
+let globalCarb = "rice";
+const TARGET_CAL = 2680;
+
+function carbKcalPer100(state){
+  const c = CARBS[globalCarb];
+  return c[state] || c.cooked;
+}
+
+function computeItem(item){
+  if(item.type === "egg") return { kcal:item.qty*EGG_KCAL_EACH, protein:item.qty*6.3 };
+  if(item.type === "oil") return { kcal:item.tbsp*OIL_KCAL_PER_TBSP, protein:0 };
+  if(item.type === "chicken"){
+    const ref = CHICKEN[item.state];
+    return { kcal:ref.kcal*item.grams/100, protein:ref.protein*item.grams/100 };
+  }
+  if(item.type === "carb"){
+    const ref = carbKcalPer100(item.state);
+    return { kcal:ref.kcal*item.grams/100, protein:ref.protein*item.grams/100 };
+  }
+  return {kcal:0,protein:0};
+}
+
+// total raw-equivalent chicken grams across all meals today (for the sync feature)
+function totalRawChickenGrams(){
+  let total = 0;
+  meals.forEach(meal=>{
+    meal.items.forEach(item=>{
+      if(item.type === "chicken"){
+        if(item.state === "raw") total += item.grams;
+        else total += item.grams * (CHICKEN.cooked.kcal / CHICKEN.raw.kcal); // convert cooked weight back to raw-equivalent
+      }
+    });
+  });
+  return Math.round(total);
+}
+
+function renderMealPlan(){
+  const mealsEl = document.getElementById("meals");
+  mealsEl.innerHTML = "";
+  let totalCal=0, totalProtein=0, totalCarbG=0;
+
+  meals.forEach((meal, mi)=>{
+    const card = document.createElement("div");
+    card.className = "mp-meal";
+
+    const head = document.createElement("div");
+    head.className = "mp-meal-head";
+    head.innerHTML = `<span class="name">${meal.name}</span><span class="time">${meal.time}</span>`;
+    card.appendChild(head);
+
+    const body = document.createElement("div");
+    body.className = "mp-meal-body";
+    let mealCal=0, mealProtein=0;
+
+    meal.items.forEach((item, ii)=>{
+      const row = document.createElement("div");
+      row.className = "mp-item";
+      let controlsHTML = "";
+
+      if(item.type==="egg"){
+        controlsHTML = `<input type="number" min="0" step="1" value="${item.qty}" data-mi="${mi}" data-ii="${ii}" data-field="qty">`;
+      } else if(item.type==="oil"){
+        controlsHTML = `<input type="number" min="0" step="0.25" value="${item.tbsp}" data-mi="${mi}" data-ii="${ii}" data-field="tbsp">`;
+      } else if(item.type==="chicken"){
+        controlsHTML = `
+          <div class="mp-state-btns">
+            <button class="mp-state-btn ${item.state==='raw'?'on':''}" data-mi="${mi}" data-ii="${ii}" data-setstate="raw">قبل الطبخ</button>
+            <button class="mp-state-btn ${item.state==='cooked'?'on':''}" data-mi="${mi}" data-ii="${ii}" data-setstate="cooked">بعد الطبخ</button>
+          </div>
+          <input type="number" min="0" step="5" value="${item.grams}" data-mi="${mi}" data-ii="${ii}" data-field="grams">`;
+      } else if(item.type==="carb"){
+        const hasRaw = !!CARBS[globalCarb].raw;
+        if(!hasRaw && item.state==="raw") item.state = "cooked";
+        controlsHTML = `
+          <div class="mp-state-btns">
+            ${hasRaw ? `<button class="mp-state-btn ${item.state==='raw'?'on':''}" data-mi="${mi}" data-ii="${ii}" data-setstate="raw">قبل الطبخ</button>` : ``}
+            <button class="mp-state-btn ${item.state==='cooked'?'on':''}" data-mi="${mi}" data-ii="${ii}" data-setstate="cooked">بعد الطبخ</button>
+          </div>
+          <input type="number" min="0" step="5" value="${item.grams}" data-mi="${mi}" data-ii="${ii}" data-field="grams">`;
+      }
+
+      const result = computeItem(item);
+      mealCal += result.kcal;
+      mealProtein += result.protein;
+      if(item.type==="carb") totalCarbG += item.grams;
+
+      const displayLabel = item.type==="carb" ? CARBS[globalCarb].label : item.label;
+      row.innerHTML = `<span class="item-name">${displayLabel}</span>${controlsHTML}<span class="kcal">${Math.round(result.kcal)} سعرة</span>`;
+      body.appendChild(row);
+    });
+
+    const sub = document.createElement("div");
+    sub.className = "mp-meal-sub";
+    sub.innerHTML = `<span>مجموع الوجبة: ${Math.round(mealCal)} سعرة</span><span>بروتين: ${Math.round(mealProtein)} غ</span>`;
+    body.appendChild(sub);
+
+    card.appendChild(body);
+    mealsEl.appendChild(card);
+    totalCal += mealCal;
+    totalProtein += mealProtein;
+  });
+
+  document.getElementById("totalCal").textContent = Math.round(totalCal);
+  document.getElementById("totalProtein").innerHTML = Math.round(totalProtein)+" <small>غ</small>";
+  document.getElementById("totalCarbG").innerHTML = Math.round(totalCarbG)+" <small>غ</small>";
+  const diff = Math.round(totalCal - TARGET_CAL);
+  document.getElementById("deficit").textContent = (diff>0?"+":"")+diff;
+
+  mealsEl.querySelectorAll("input[data-field]").forEach(inp=>{
+    inp.addEventListener("input", e=>{
+      const mi=+e.target.dataset.mi, ii=+e.target.dataset.ii, field=e.target.dataset.field;
+      meals[mi].items[ii][field] = parseFloat(e.target.value)||0;
+      renderMealPlan();
+      updateTodayStrip();
+    });
+  });
+  mealsEl.querySelectorAll("[data-setstate]").forEach(b=>{
+    b.addEventListener("click", e=>{
+      const mi=+e.target.dataset.mi, ii=+e.target.dataset.ii, st=e.target.dataset.setstate;
+      const item = meals[mi].items[ii];
+      const oldForm = item.type==="chicken" ? CHICKEN[item.state] : carbKcalPer100(item.state);
+      const newForm = item.type==="chicken" ? CHICKEN[st] : carbKcalPer100(st);
+      item.grams = Math.round(item.grams * (oldForm.kcal/newForm.kcal));
+      item.state = st;
+      renderMealPlan();
+      updateTodayStrip();
+    });
+  });
+}
+
+document.getElementById("globalCarbToggle").addEventListener("click", e=>{
+  if(e.target.classList.contains("mp-toggle-btn")){
+    document.querySelectorAll("#globalCarbToggle .mp-toggle-btn").forEach(b=>b.classList.remove("active"));
+    e.target.classList.add("active");
+    globalCarb = e.target.dataset.carb;
+    renderMealPlan();
+  }
+});
+
+/* =========================================================
+   TODAY STRIP (shared signature element)
+   ========================================================= */
+function updateTodayStrip(){
+  const total = totalRawChickenGrams();
+  document.getElementById("todayChickenTotal").innerHTML = total + " <small>غ</small>";
+  const preview = document.getElementById("syncPreview");
+  if(preview) preview.textContent = total;
+  const preview2 = document.getElementById("batchSyncPreview");
+  if(preview2) preview2.textContent = total;
+}
+
+/* =========================================================
+   MARINADE CALCULATOR LOGIC (unchanged data, no localStorage)
+   ========================================================= */
+const BASE_WEIGHT = 630;
+
+const RECIPES = {
+  'spicy-creamy': {
+    name: 'كريمية حارة (زبادي)', ref: '0117',
+    desc: 'التتبيلة الأصلية — زبادي وشطة ومعجون طماطم، حرّيفة وكريمية.',
+    ingredients: [
+      { name: 'زبادي يوناني قليل الدسم', amount: 150, unit: 'غ' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'معجون طماطم', amount: 1, unit: 'م.كبيرة' },
+      { name: 'صلصة حارة (شطة/هوت صوص)', amount: 1.5, unit: 'م.كبيرة' },
+      { name: 'بابريكا حارة أو حلوة', amount: 1, unit: 'م.صغيرة' },
+      { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'فلفل أسود', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+      { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'oliveoil', name: 'زيت زيتون', amount: 1, unit: 'م.كبيرة', note: 'لطراوة أكتر ولمسة دهون صحية' },
+      { id: 'ginger', name: 'زنجبيل بودرة', amount: 0.25, unit: 'م.صغيرة', note: 'نكهة خفيفة، اختياري بحتة' },
+      { id: 'onionpowder', name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة', note: 'يعمّق النكهة مع الثوم' },
+      { id: 'oregano', name: 'أوريغانو مجفف', amount: 0.5, unit: 'م.صغيرة', note: 'نكهة متوسطية خفيفة' },
+      { id: 'vinegar', name: 'خل تفاح', amount: 1, unit: 'م.صغيرة', note: 'بديل/إضافة لليمون لطراوة أكتر' },
+      { id: 'honey', name: 'عسل', amount: 1, unit: 'م.صغيرة', note: 'لموازنة الحرارة إذا الصلصة قوية' },
+    ],
+    steps: [
+      'اخلط كل مقادير التتبيلة سوا بوعاء لين تصير عجينة متجانسة.',
+      'نظّف قطع الدجاج وجفّفها كويس بمنشفة ورق.',
+      'غطّي الدجاج بالتتبيلة كامل وتأكد إنها وصلت لكل الأجزاء.',
+      'غطي الوعاء وحطه بالثلاجة حسب مدة التتبيل المقترحة فوق.',
+      'طلّع الدجاج قبل الطبخ بـ١٥-٢٠ دقيقة توصل حرارة الغرفة.',
+      'اطبخه بالطريقة يلي بتفضلها — فرن، شواية، أو مقلاة هوائية متل تحت.',
+    ],
+    airfryer: { temp: '190°م', time: '14-18 دقيقة', tips: [
+      'رش القطع رشة خفيفة زيت زيتون قبل الحط بالسلة.',
+      'رتب القطع بصف واحد بدون تلاصق عشان تستوي بالتساوي.',
+      'اقلبها ع نص الوقت.',
+      'تأكد الحرارة الداخلية وصلت ٧٤°م أو العصير طالع صافي.',
+    ]}
+  },
+  'lemon-zaatar': {
+    name: 'ليمون وزعتر مشوي', ref: '0132',
+    desc: 'نكهة بحرية خفيفة، مثالية للشوي على الفحم أو الفرن الحامي.',
+    ingredients: [
+      { name: 'زيت زيتون', amount: 2, unit: 'م.كبيرة' },
+      { name: 'عصير ليمون', amount: 2, unit: 'م.كبيرة' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'زعتر بري', amount: 1.5, unit: 'م.كبيرة' },
+      { name: 'بابريكا حلوة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'فلفل أسود', amount: 0.25, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'onionpowder2', name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة', note: 'يعطي عمق أكتر للنكهة' },
+      { id: 'oregano2', name: 'أوريغانو', amount: 0.5, unit: 'م.صغيرة', note: 'يقوّي الطابع المتوسطي' },
+      { id: 'pomegranate', name: 'دبس رمان', amount: 1, unit: 'م.صغيرة', note: 'حموضة وحلاوة خفيفة' },
+      { id: 'sumac', name: 'سماق', amount: 0.5, unit: 'م.صغيرة', note: 'حموضة إضافية بنكهة شامية' },
+    ],
+    steps: [
+      'اخلط زيت الزيتون، الليمون، بودرة الثوم، الزعتر، البابريكا، الملح والفلفل بوعاء.',
+      'جفف قطع الدجاج ودهنها بالتتبيلة كامل.',
+      'خليها بالثلاجة حسب مدة التتبيل المقترحة فوق.',
+      'لو ناوي تشوي عالفحم، خلي القطع تجف شوي من التتبيلة الزايدة قبل ما تحطها عالشواية.',
+      'اطبخها لين يتلون سطحها الذهبي والعصير يطلع صافي.',
+    ],
+    airfryer: { temp: '200°م', time: '12-16 دقيقة', tips: [
+      'امسح التتبيلة الزايدة عن القطع قبل ما تحطها عشان ما تحرق.',
+      'رشة زيت خفيفة فوق كل قطعة.',
+      'اقلبها بنص الوقت لتحمير متساوي.',
+      'إذا القطع سميكة زيد ٢-٣ دقايق.',
+    ]}
+  },
+  'curry': {
+    name: 'كاري أصفر', ref: '0145',
+    desc: 'دافي وعطري، منيح مع الأرز أو الخضار المشوية.',
+    ingredients: [
+      { name: 'زبادي أو لبن جوز الهند', amount: 150, unit: 'غ' },
+      { name: 'بودرة كاري', amount: 1.5, unit: 'م.كبيرة' },
+      { name: 'كركم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+      { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'cardamom', name: 'هيل مطحون', amount: 0.25, unit: 'م.صغيرة', note: 'نكهة هندية أعمق' },
+      { id: 'chiliflakes', name: 'فلفل أحمر حار', amount: 0.5, unit: 'م.صغيرة', note: 'لمن بدك حرارة أعلى' },
+      { id: 'coriander', name: 'كزبرة خضراء مفرومة', amount: 1, unit: 'م.كبيرة', note: 'تنضاف آخر التتبيل أو عالتقديم' },
+      { id: 'honey2', name: 'عسل', amount: 1, unit: 'م.صغيرة', note: 'يوازن حرارة الكاري' },
+    ],
+    steps: [
+      'اخلط الزبادي أو لبن جوز الهند مع بودرة الكاري، الكركم، بودرة الثوم، الزنجبيل، الليمون والملح.',
+      'غطي قطع الدجاج بالتتبيلة كامل.',
+      'خليها بالثلاجة حسب المدة المقترحة فوق.',
+      'لو بدك صلصة، اطبخ الدجاج المتبل بمقلاة على نار متوسطة مع شوية مرقة أو لبن جوز الهند إضافي لين يقصر القوام.',
+      'قدمه مع أرز أو خبز.',
+    ],
+    airfryer: { temp: '190°م', time: '14-18 دقيقة', tips: [
+      'امسح الزيادة من التتبيلة الكريمية قبل الحط بالسلة عشان ما تسيح وتوسخ القاعدة.',
+      'رشة زيت خفيفة تساعد التلوّن.',
+      'اقلبها بنص الوقت.',
+      'الكاري بيتلون غامق شوي من الكركم وهاد طبيعي مش حرقان.',
+    ]}
+  },
+  'tandoori': {
+    name: 'تندوري', ref: '0158',
+    desc: 'بهارات قوية ولون مميز، الأفضل على الشواية أو الفرن العالي.',
+    ingredients: [
+      { name: 'زبادي يوناني', amount: 150, unit: 'غ' },
+      { name: 'بابريكا حارة', amount: 1, unit: 'م.صغيرة' },
+      { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'كزبرة ناشفة مطحونة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'كركم', amount: 0.25, unit: 'م.صغيرة' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة' },
+      { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'chilired', name: 'فلفل أحمر حار إضافي', amount: 0.5, unit: 'م.صغيرة', note: 'لحرارة تندوري أقوى' },
+      { id: 'oil2', name: 'زيت', amount: 1, unit: 'م.كبيرة', note: 'يساعد التتبيلة تلتصق وتمنع الجفاف' },
+      { id: 'coriander2', name: 'كزبرة خضراء', amount: 1, unit: 'م.كبيرة', note: 'للتقديم أو داخل التتبيلة' },
+    ],
+    steps: [
+      'اخلط الزبادي مع كل البهارات، الليمون والملح.',
+      'اعمل شقوق خفيفة بقطع الدجاج عشان التتبيلة توصل لجوا.',
+      'غطي القطع بالتتبيلة كامل واتركها بالثلاجة حسب المدة المقترحة فوق.',
+      'اطبخها على نار عالية أو شواية لين يصير سطحها فيه شوية حرق خفيف متل التندوري الأصلي.',
+    ],
+    airfryer: { temp: '210°م', time: '14-18 دقيقة', tips: [
+      'المقلاة الهوائية منيحة تعطي تلون شبه التشارينغ متاع فرن التندوري التقليدي.',
+      'رتب القطع بمسافة بينها.',
+      'اقلبها بنص الوقت ورش رشة زيت لو حسيتها ناشفة.',
+      'لآخر ٢-٣ دقايق زود الحرارة شوي لو بدك تلوّن أغمق.',
+    ]}
+  },
+  'soy-honey': {
+    name: 'صويا وعسل (آسيوي)', ref: '0171',
+    desc: 'حلو-مالح بطابع آسيوي، منيح للقلي أو الشوي السريع.',
+    ingredients: [
+      { name: 'صوص صويا', amount: 3, unit: 'م.كبيرة' },
+      { name: 'عسل', amount: 2, unit: 'م.كبيرة' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'زنجبيل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'خل أرز أو خل تفاح', amount: 1, unit: 'م.كبيرة' },
+      { name: 'زيت سمسم', amount: 1, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'sesame', name: 'سمسم محمص', amount: 1, unit: 'م.صغيرة', note: 'للتزيين بعد الشوي' },
+      { id: 'chiliflakes2', name: 'فلفل حار مجروش', amount: 0.5, unit: 'م.صغيرة', note: 'لمسة حرارة' },
+      { id: 'greenonion', name: 'بصل أخضر مفروم', amount: 1, unit: 'م.كبيرة', note: 'يضاف عالتقديم غالباً' },
+    ],
+    steps: [
+      'اخلط صوص الصويا، العسل، بودرة الثوم، الزنجبيل، الخل وزيت السمسم.',
+      'اطبخ نص الكمية عالنار لين تقصر شوي، واحتفظ بالنص التاني نيء للتتبيل.',
+      'غطي الدجاج بالتتبيلة النيئة واتركه بالثلاجة حسب المدة المقترحة فوق.',
+      'اطبخ الدجاج بالطريقة يلي بتحبها، ودهنه بالصلصة المطبوخة بآخر ٢-٣ دقايق بس.',
+    ],
+    airfryer: { temp: '190°م', time: '12-15 دقيقة', tips: [
+      'العسل بالتتبيلة ممكن يحرق بسرعة، راقب آخر ٣-٤ دقايق منيح.',
+      'ادهن القطع بالصلصة المطبوخة بالدقايق الأخيرة بس مش من البداية.',
+      'اقلبها بنص الوقت.',
+      'رش سمسم بعد ما تطلع من المقلاة مباشرة.',
+    ]}
+  },
+  'simple-dry': {
+    name: 'بهارات جافة بسيطة (كيتو)', ref: '0189',
+    desc: 'خفيفة وسريعة، منيحة للي بده شي بسيط بدون سكريات أو زبادي.',
+    ingredients: [
+      { name: 'زيت زيتون', amount: 1.5, unit: 'م.كبيرة' },
+      { name: 'بابريكا', amount: 1, unit: 'م.صغيرة' },
+      { name: 'بودرة ثوم', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'بصل بودرة', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'كمون', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'ملح', amount: 0.5, unit: 'م.صغيرة' },
+      { name: 'فلفل أسود', amount: 0.5, unit: 'م.صغيرة' },
+    ],
+    optional: [
+      { id: 'oregano3', name: 'أوريغانو', amount: 0.5, unit: 'م.صغيرة', note: 'نكهة إضافية بسيطة' },
+      { id: 'chiliflakes3', name: 'فلفل حار مجروش', amount: 0.5, unit: 'م.صغيرة', note: 'لمن حاب حرارة' },
+      { id: 'lemon3', name: 'عصير ليمون', amount: 1, unit: 'م.كبيرة', note: 'يعطي نكهة أخف وأطرى' },
+    ],
+    steps: [
+      'جفف قطع الدجاج كويس بمنشفة ورق.',
+      'ادهنها بزيت الزيتون.',
+      'رش كل البهارات الجافة وافرك عالدجاج كامل.',
+      'لو عندك وقت خليها بالثلاجة حسب المدة المقترحة فوق.',
+      'اطبخها بالطريقة يلي بتحبها.',
+    ],
+    airfryer: { temp: '200°م', time: '12-16 دقيقة', tips: [
+      'ما تحتاج زيت إضافي غير يلي بالتتبيلة.',
+      'رتبها بصف واحد بدون تلاصق.',
+      'اقلبها بنص الوقت لتحمير متساوي من الجهتين.',
+      'تأكد الحرارة الداخلية ٧٤°م قبل ما تطلعها.',
+    ]}
+  },
+};
+
+const weightInput = document.getElementById('weight');
+const recipeSelect = document.getElementById('recipeSelect');
+const recipeDesc = document.getElementById('recipeDesc');
+const tagRef = document.getElementById('tagRef');
+const table = document.getElementById('ingredientsTable');
+const optionalPicker = document.getElementById('optionalPicker');
+const stepsList = document.getElementById('stepsList');
+const airfryerBox = document.getElementById('airfryerBox');
+const proteinVal = document.getElementById('proteinVal');
+const proteinCooked = document.getElementById('proteinCooked');
+const caloriesVal = document.getElementById('caloriesVal');
+const fatVal = document.getElementById('fatVal');
+const servingsVal = document.getElementById('servingsVal');
+const marinateVal = document.getElementById('marinateVal');
+const costFresh = document.getElementById('costFresh');
+const costFrozen = document.getElementById('costFrozen');
+const tipBox = document.getElementById('tipBox');
+const copyBtn = document.getElementById('copyBtn');
+const printBtn = document.getElementById('printBtn');
+const syncBtn = document.getElementById('syncBtn');
+
+let currentRecipeId = 'spicy-creamy';
+let optionalByRecipe = {};
+Object.keys(RECIPES).forEach(id=>{
+  optionalByRecipe[id] = {};
+  RECIPES[id].optional.forEach(o=>optionalByRecipe[id][o.id]=false);
+});
+
+function fmt(n){ return (Math.round(n*100)/100).toString(); }
+
+function buildRecipeSelect(){
+  recipeSelect.innerHTML = '';
+  Object.keys(RECIPES).forEach(id=>{
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = RECIPES[id].name;
+    if(id===currentRecipeId) opt.selected = true;
+    recipeSelect.appendChild(opt);
+  });
+}
+
+function buildOptionalPicker(){
+  const recipe = RECIPES[currentRecipeId];
+  optionalPicker.innerHTML = '';
+  if(!recipe.optional.length){
+    const p = document.createElement('p');
+    p.className = 'no-optional';
+    p.textContent = 'ما في إضافات اختيارية لهاي الوصفة حالياً.';
+    optionalPicker.appendChild(p);
+    return;
+  }
+  recipe.optional.forEach(opt=>{
+    const row = document.createElement('div');
+    row.className = 'toggle-item';
+    row.innerHTML = `
+      <input type="checkbox" id="opt-${opt.id}" ${optionalByRecipe[currentRecipeId][opt.id] ? 'checked' : ''}>
+      <label for="opt-${opt.id}">${opt.name}<br><span class="base-amt">${opt.note}</span></label>
+      <span class="base-amt">${opt.amount} ${opt.unit}</span>
+    `;
+    optionalPicker.appendChild(row);
+    row.querySelector('input').addEventListener('change', e=>{
+      optionalByRecipe[currentRecipeId][opt.id] = e.target.checked;
+      renderMarinade();
+    });
+  });
+}
+
+function buildStepsAndAirfryer(){
+  const recipe = RECIPES[currentRecipeId];
+  stepsList.innerHTML = '';
+  recipe.steps.forEach(step=>{
+    const li = document.createElement('li');
+    li.textContent = step;
+    stepsList.appendChild(li);
+  });
+  const af = recipe.airfryer;
+  airfryerBox.innerHTML = `
+    <div class="af-stats">
+      <div class="af-stat"><div class="k">الحرارة</div><div class="v">${af.temp}</div></div>
+      <div class="af-stat"><div class="k">المدة</div><div class="v">${af.time}</div></div>
+    </div>
+    <ul class="af-tips">${af.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+  `;
+}
+
+function renderMarinade(){
+  const recipe = RECIPES[currentRecipeId];
+  const w = parseFloat(weightInput.value) || 0;
+  const ratio = w / BASE_WEIGHT;
+
+  document.getElementById('tagLabel').textContent = recipe.name;
+  tagRef.textContent = 'Ref. ' + recipe.ref;
+  recipeDesc.textContent = recipe.desc;
+
+  document.querySelectorAll('.presets button').forEach(btn=>{
+    btn.classList.toggle('active', parseFloat(btn.dataset.w)===w);
+  });
+
+  table.innerHTML = '';
+  recipe.ingredients.forEach(ing=>{
+    const scaled = ing.amount * ratio;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${ing.name}</td><td class="amt">${fmt(scaled)} ${ing.unit}</td>`;
+    table.appendChild(tr);
+  });
+  recipe.optional.forEach(opt=>{
+    if(!optionalByRecipe[currentRecipeId][opt.id]) return;
+    const scaled = opt.amount * ratio;
+    const tr = document.createElement('tr');
+    tr.className = 'optional-row';
+    tr.innerHTML = `<td><span class="opt-badge">اختياري</span>${opt.name}</td><td class="amt">${fmt(scaled)} ${opt.unit}</td>`;
+    table.appendChild(tr);
+  });
+
+  const proteinRaw = w * 0.23;
+  proteinVal.innerHTML = `${fmt(proteinRaw)} <small>غ</small>`;
+  proteinCooked.innerHTML = `${fmt(proteinRaw)} <small>غ (نفس الكمية، وزن أقل)</small>`;
+
+  const calories = w * 1.43;
+  const fat = w * 0.08;
+  caloriesVal.innerHTML = `${Math.round(calories)} <small>سعرة</small>`;
+  fatVal.innerHTML = `${fmt(fat)} <small>غ</small>`;
+
+  const servings = Math.max(1, Math.round(w/180));
+  servingsVal.innerHTML = `~${servings} <small>حصة</small>`;
+
+  let marinateText = '٢-٤ ساعات';
+  if(w>=900) marinateText='٤-٨ ساعات';
+  else if(w<=400) marinateText='١-٢ ساعة';
+  marinateVal.textContent = marinateText;
+
+  costFresh.textContent = fmt((w/1000)*2.5) + ' د.أ';
+  costFrozen.textContent = fmt((w/1000)*3.0) + ' د.أ';
+
+  const activeOptional = recipe.optional.filter(o=>optionalByRecipe[currentRecipeId][o.id]).map(o=>o.name);
+  tipBox.innerHTML = activeOptional.length
+    ? `<b>ملاحظة:</b> فعّلت ${activeOptional.join('، ')} — هاي بتضيف نكهة بس ما محسوبة بالسعرات فوق.`
+    : `<b>نصيحة:</b> جرّب تفعّل شي من "إضافات اختيارية" فوق لتطوّر النكهة حسب مزاجك.`;
+
+  buildStepsAndAirfryer();
+}
+
+function buildCopyText(){
+  const recipe = RECIPES[currentRecipeId];
+  const w = parseFloat(weightInput.value)||0;
+  const ratio = w / BASE_WEIGHT;
+  let lines = [`${recipe.name} — ${w} غ دجاج نيء`, ''];
+  recipe.ingredients.forEach(ing=>lines.push(`${fmt(ing.amount*ratio)} ${ing.unit} — ${ing.name}`));
+  const activeOptional = recipe.optional.filter(o=>optionalByRecipe[currentRecipeId][o.id]);
+  if(activeOptional.length){
+    lines.push('', 'إضافات اختيارية:');
+    activeOptional.forEach(opt=>lines.push(`${fmt(opt.amount*ratio)} ${opt.unit} — ${opt.name}`));
+  }
+  lines.push('', 'طريقة التحضير:');
+  recipe.steps.forEach((s,i)=>lines.push(`${i+1}. ${s}`));
+  lines.push('', `بالمقلاة الهوائية: ${recipe.airfryer.temp} لمدة ${recipe.airfryer.time}`);
+  recipe.airfryer.tips.forEach(t=>lines.push(`- ${t}`));
+  return lines.join('\n');
+}
+
+function flashCopySuccess(){
+  const original = copyBtn.textContent;
+  copyBtn.textContent = 'انسخت! ✓';
+  copyBtn.classList.add('copy-flash');
+  setTimeout(()=>{ copyBtn.textContent = original; copyBtn.classList.remove('copy-flash'); }, 1500);
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px'; ta.style.top='0';
+  document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+  let ok=false; try{ ok = document.execCommand('copy'); }catch(e){ ok=false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+weightInput.addEventListener('input', renderMarinade);
+recipeSelect.addEventListener('change', e=>{ currentRecipeId=e.target.value; buildOptionalPicker(); renderMarinade(); });
+document.querySelectorAll('.presets button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ weightInput.value = btn.dataset.w; renderMarinade(); });
+});
+copyBtn.addEventListener('click', ()=>{
+  const text = buildCopyText();
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(flashCopySuccess).catch(()=>{
+      if(fallbackCopy(text)) flashCopySuccess(); else copyBtn.textContent='حدد النص وانسخه يدوياً';
+    });
+  } else {
+    if(fallbackCopy(text)) flashCopySuccess(); else copyBtn.textContent='حدد النص وانسخه يدوياً';
+  }
+});
+printBtn.addEventListener('click', ()=>window.print());
+syncBtn.addEventListener('click', ()=>{
+  weightInput.value = totalRawChickenGrams();
+  renderMarinade();
+});
+
+/* =========================================================
+   ACTUAL-BATCH PROTEIN CALCULATOR
+   (from the original protein-calculator.html, restyled to
+   match the ledger and wired into the shared "today" total)
+   ========================================================= */
+let actualMealCount = 0;
+
+function getActualRatio(){
+  const raw = parseFloat(document.getElementById('batchRaw').value);
+  const cooked = parseFloat(document.getElementById('batchCooked').value);
+  if(!raw || !cooked || raw<=0 || cooked<=0) return null;
+  return (raw*0.23)/cooked; // grams protein per gram cooked, for THIS batch
+}
+
+function calculateActualBatch(){
+  const raw = parseFloat(document.getElementById('batchRaw').value);
+  const cooked = parseFloat(document.getElementById('batchCooked').value);
+
+  const totalProteinEl = document.getElementById('batchTotalProtein');
+  const lossEl = document.getElementById('batchLossPct');
+  const per100El = document.getElementById('batchPer100');
+
+  totalProteinEl.innerHTML = (raw>0) ? `${(raw*0.23).toFixed(1)} <small>غ</small>` : `-- <small>غ</small>`;
+
+  if(raw>0 && cooked>0){
+    const loss = (1 - (cooked/raw)) * 100;
+    lossEl.textContent = loss.toFixed(0) + '٪';
+  } else {
+    lossEl.textContent = '--';
+  }
+
+  const ratio = getActualRatio();
+  per100El.textContent = (ratio!==null) ? `كل ١٠٠غ مطبوخ = ${(ratio*100).toFixed(1)} غ بروتين` : 'أدخل الوزنين فوق';
+
+  updateAllActualMeals();
+}
+
+function addActualMealRow(){
+  actualMealCount++;
+  const id = actualMealCount;
+  const row = document.createElement('div');
+  row.className = 'ameal-row';
+  row.id = 'ameal-' + id;
+  row.innerHTML = `
+    <input type="number" placeholder="وزن الوجبة المطبوخ (غ)">
+    <div class="ameal-result" id="amealResult-${id}">—</div>
+    <button class="ameal-remove" title="حذف">✕</button>
+  `;
+  document.getElementById('actualMealsList').appendChild(row);
+  row.querySelector('input').addEventListener('input', ()=>updateActualMeal(id));
+  row.querySelector('.ameal-remove').addEventListener('click', ()=>{ row.remove(); });
+}
+
+function updateActualMeal(id){
+  const row = document.getElementById('ameal-' + id);
+  if(!row) return;
+  const weight = parseFloat(row.querySelector('input').value);
+  const resultEl = document.getElementById('amealResult-' + id);
+  const ratio = getActualRatio();
+
+  if(!weight || weight<=0){
+    resultEl.textContent = '—';
+    resultEl.classList.remove('warn');
+    return;
+  }
+  if(ratio===null){
+    resultEl.textContent = 'أدخل أوزان الدفعة فوق';
+    resultEl.classList.add('warn');
+    return;
+  }
+  resultEl.classList.remove('warn');
+  resultEl.textContent = (weight*ratio).toFixed(1) + ' غ بروتين';
+}
+
+function updateAllActualMeals(){
+  for(let i=1; i<=actualMealCount; i++){ updateActualMeal(i); }
+}
+
+document.getElementById('batchRaw').addEventListener('input', calculateActualBatch);
+document.getElementById('batchCooked').addEventListener('input', calculateActualBatch);
+document.getElementById('addActualMealBtn').addEventListener('click', addActualMealRow);
+document.getElementById('batchSyncBtn').addEventListener('click', ()=>{
+  document.getElementById('batchRaw').value = totalRawChickenGrams();
+  calculateActualBatch();
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderMealPlan();
+updateTodayStrip();
+buildRecipeSelect();
+buildOptionalPicker();
+renderMarinade();
+addActualMealRow();
+calculateActualBatch();
+</script>
+</body>
+</html>
